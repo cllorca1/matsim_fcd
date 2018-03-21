@@ -17,10 +17,14 @@ data = data %>%
   mutate(tt_max = max(tt6max,tt7max,tt8max,tt9max))
 
 data = data %>% rowwise() %>% mutate(speed_min_matsim = LENGTH / tt_max * 3.6)
-data = data %>% rowwise() %>% mutate(speed_avg_matsim = LENGTH / tt_avg * 3.6)
+data = data %>% rowwise() %>% mutate(speed_avg_matsim = min(LENGTH / tt_avg * 3.6, FREESPEED*3.6, na.rm = T))
 data = data %>% rowwise() %>% mutate(speed_max_matsim = LENGTH / tt_min * 3.6)
 
 rm(linksFcd2Matsim)
 
 #rename fcd speed
 data = data %>% mutate(speed_avg_fcd = avg_speed)
+
+data = data %>% mutate(time_fcd = LENGTH/speed_avg_fcd*3.6)
+data = data %>% mutate(time_matsim = LENGTH/speed_avg_matsim*3.6)
+data = data %>% mutate(vc_ratio = v/4/CAPACITY)
