@@ -1,6 +1,19 @@
 #load fcd data
 fcd_speeds = read.csv("osm_mutual_links_avg_speed.csv")
 
+fcd_speeds_wo_zero = read.csv("FCD/fcd_102017_6to10am_avg_speed_wo0.csv", sep = ";")
+fcd_speeds_wo_zero = fcd_speeds_wo_zero %>% 
+  filter(osm_way_id %in% fcd_speeds$osm_way_id)  
+
+fcd_speeds_wo_zero = fcd_speeds_wo_zero %>%
+  group_by(osm_way_id) %>%
+  summarize(number_veh_0 = sum(number_veh), avg_speed_0 = mean(avg_speed))
+
+fcd_speeds = merge(x=fcd_speeds, y= fcd_speeds_wo_zero, by.x = "osm_way_id", by.y = "osm_way_id", all = F)
+
+fcd_speeds = fcd_speeds %>% select(osm_way_id,number_veh = number_veh_0, avg_speed = avg_speed_0)
+
+
 #load conversion file between matsim id and osm id
 matsim2osm = read.csv("matsimAndOsmLinks_clipped.csv") %>% select (matsimId, osmId, inverseMatsimId)
 
@@ -68,5 +81,5 @@ linksFcd2Matsim = merge(x=matsimData, y=fcd_speeds, by.x = "osmId", by.y = "osm_
 
 
 #clean auxiliary files
-rm(fcd_speeds, matsim2osm, matsimData, osmCategories, originNodes, destNodes)
+rm(fcd_speeds, matsim2osm, matsimData, osmCategories, originNodes, destNodes, fcd_speeds_wo_zero)
 
